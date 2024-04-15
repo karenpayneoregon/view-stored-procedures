@@ -6,6 +6,15 @@ Provides a console project which scans a database for stored procedures and writ
 
 Before running, set the connection string in appsettings.json
 
+```json
+{
+  "ConnectionsConfiguration": {
+    "ActiveEnvironment": "Development",
+    "Development": "Data Source=.\\SQLEXPRESS;Initial Catalog=NorthWind2024;Integrated Security=True;Encrypt=False"
+  }
+}
+```
+
 ## Screenshot
 
 ![x](assets/screenshot.png)
