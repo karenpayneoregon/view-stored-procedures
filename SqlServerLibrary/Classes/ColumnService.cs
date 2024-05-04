@@ -16,6 +16,4 @@ public class ColumnService
     {
         return _cn.Query<ColumnDescriptions>(SqlStatements.DescriptionStatement, new { TableName = tableName}).AsList();
     }
-
-
 }

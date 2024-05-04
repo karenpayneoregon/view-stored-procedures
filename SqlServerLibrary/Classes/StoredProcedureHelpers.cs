@@ -1,6 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Data;
 using Dapper;
+using SqlServerLibrary.Extensions;
 
 namespace SqlServerLibrary.Classes;
 public class StoredProcedureHelpers
@@ -10,7 +11,7 @@ public class StoredProcedureHelpers
     public string FileName()
     {
         SqlConnectionStringBuilder builder = new(ConnectionString());
-        return Path.Combine("StoredProcedures", $"{builder.InitialCatalog}_StoredProcedures.sql");
+        return Path.Combine("StoredProcedures", $"{builder.DataSource.Clean()}__{builder.InitialCatalog}_StoredProcedures.sql");
     }
 
     public string InitialCatalog()
@@ -24,21 +25,44 @@ public class StoredProcedureHelpers
     /// Read names of stored procedures from database in connection string
     /// </summary>
     /// <returns>List of Stored procedures if any</returns>
-    public List<string> GetStoredProcedureName()
+    public async Task<List<string>> GetStoredProcedureName(string excludes)
     {
         var statement =
-            """
+            $"""
             SELECT name AS "ProcedureName"
-             FROM sys.sysobjects
+            FROM sys.sysobjects
             WHERE type = 'P'
-              AND LEFT(name, 3) NOT IN ( 'sp_', 'xp_', 'ms_' )
+              AND LEFT(name, 3) NOT IN ( {excludes} )
             ORDER BY name;
             """;
+        
+        return (await _cn.QueryAsync<string>(statement)).AsList();
 
-        List<string> storedProcedureNames = [];
+    }
 
+    public async Task<(bool success, List<string> list)> GetStoredProcedureNameSafe(string dbName, string excludes)
+    {
+        var test = ConnectionReader.Get(dbName);
+        await using var cn = new SqlConnection(ConnectionReader.Get(dbName));
 
-        return _cn.Query<string>(statement).AsList();
+        var statement =
+            $"""
+             SELECT name AS "ProcedureName"
+             FROM sys.sysobjects
+             WHERE type = 'P'
+               AND LEFT(name, 3) NOT IN ( {excludes} )
+             ORDER BY name;
+             """;
+
+        try
+        {
+            return (true, (await cn.QueryAsync<string>(statement)).AsList());
+        }
+        catch (Exception ex)
+        {
+            return (false, null)!;
+        }
+
     }
 
     /// <summary>
@@ -46,19 +70,44 @@ public class StoredProcedureHelpers
     /// </summary>
     /// <param name="procedureName">Name of stored procedure</param>
     /// <returns>Definition of stored procedure</returns>
-    public string? GetStoredProcedureDefinition(string procedureName)
+    public async Task<string?> GetStoredProcedureDefinitionAsync(string db, string procedureName)
     {
         var statement =
             """
-            SELECT      c.text
-             FROM      sys.syscomments c
+            SELECT    c.text
+            FROM      sys.syscomments c
             INNER JOIN sys.sysobjects o
                ON o.id = c.id
             WHERE      o.type = 'P'
               AND      o.name = @ProcedureName;
             """;
 
-        return _cn.Query<string>(statement, new { ProcedureName = procedureName}).FirstOrDefault();
+
+        SqlConnectionStringBuilder builder = new(ConnectionString());
+        builder.InitialCatalog = db;
+        _cn.ConnectionString = builder.ConnectionString;
+        return (await  _cn.QueryAsync<string>(statement, new { ProcedureName = procedureName}))
+            .FirstOrDefault();
+    }
+
+    public string? GetStoredProcedureDefinition(string db, string procedureName)
+    {
+        var statement =
+            """
+            SELECT    c.text
+            FROM      sys.syscomments c
+            INNER JOIN sys.sysobjects o
+               ON o.id = c.id
+            WHERE      o.type = 'P'
+              AND      o.name = @ProcedureName;
+            """;
+
+
+        SqlConnectionStringBuilder builder = new(ConnectionString());
+        builder.InitialCatalog = db;
+        _cn.ConnectionString = builder.ConnectionString;
+        return _cn.Query<string>(statement, new { ProcedureName = procedureName })
+            .FirstOrDefault();
     }
 
     public string? GetStoredProcedureDefinition1(string procedureName)
@@ -74,7 +123,8 @@ public class StoredProcedureHelpers
             SELECT @FullText ;
             """;
 
-        return _cn.Query<string>(statement, new { ProcedureName = procedureName }).FirstOrDefault();
+        return _cn.Query<string>(statement, new { ProcedureName = procedureName })
+            .FirstOrDefault();
     }
 
 }

@@ -67,6 +67,7 @@
             ORDER BY 1;
             """;
 
+        
         /// <summary>
         /// Get details for a table which requires a table name in the calling code
         /// </summary>

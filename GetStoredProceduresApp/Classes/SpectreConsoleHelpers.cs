@@ -1,5 +1,4 @@
 ﻿using System.Runtime.CompilerServices;
-using Spectre.Console;
 
 namespace GetStoredProceduresApp.Classes;
 

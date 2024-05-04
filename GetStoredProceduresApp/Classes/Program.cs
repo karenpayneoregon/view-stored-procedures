@@ -8,7 +8,8 @@ internal partial class Program
     public static void Init()
     {
         AnsiConsole.MarkupLine("");
-        Console.Title = "Write Stored procedure definitions to a file";
+        Console.Title = "Stored procedure definitions";
         WindowUtility.SetConsoleWindowPosition(WindowUtility.AnchorWindow.Center);
     }
+
 }

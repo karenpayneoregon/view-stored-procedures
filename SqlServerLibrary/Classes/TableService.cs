@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Data;
-using System.Diagnostics;
 using Dapper;
+using SqlServerLibrary.Extensions;
 using SqlServerLibrary.Models;
 
 namespace SqlServerLibrary.Classes;
@@ -17,6 +17,7 @@ public class TableService
 
         return _cn.Query<string>(SqlStatements.TableNamesForDatabase(builder.InitialCatalog)).AsList();
     }
+    
     public async Task<List<TableConstraints>> GetAllTableConstraints(string initialCatalog)
     {
         SqlConnectionStringBuilder builder = new(ConnectionString())
@@ -27,4 +28,8 @@ public class TableService
         await using var cn = new SqlConnection(builder.ConnectionString);
         return ( await cn.QueryAsync<TableConstraints>(SqlStatements.TableConstraintsForDatabase)).AsList();
     }
+
+    public string ServerName() => new SqlConnectionStringBuilder(ConnectionString()).DataSource;
+    
+    public string DatServerNameClean() => ServerName().Clean();
 }
