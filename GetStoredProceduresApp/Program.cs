@@ -40,11 +40,15 @@ internal partial class Program
         foreach (var dbName in dbNames)
         {
 
-            var (hasStoredProcedures, list) = await helpers.GetStoredProcedureNameSafe(dbName, "'xp_', 'ms_'");
+            var (hasStoredProcedures, list) = await helpers
+                .GetStoredProcedureNameSafe(dbName, "'xp_', 'ms_'");
+            
             if (hasStoredProcedures)
             {
 
-                var root = databaseContainers.FirstOrDefault(x => x.Database == dbName);
+                var root = databaseContainers.FirstOrDefault(x 
+                    => x.Database == dbName);
+                
                 DatabaseContainer container = new DatabaseContainer { Database = dbName };
                 if (root is null)
                 {
@@ -58,7 +62,11 @@ internal partial class Program
                     if (definition is not null && !item.Contains("diagram"))
                     {
                         listDictionary.Add(dbName, item);
-                        container.List.Add(new ProcedureContainer { Procedure = item, Definition = definition });
+                        container.List.Add(new ProcedureContainer
+                        {
+                            Procedure = item, 
+                            Definition = definition
+                        });
                     }
                     
                 }
@@ -66,20 +74,6 @@ internal partial class Program
                 databaseContainers.Add(container);
             }
         }
-
-        //if (!listDictionary.HasItems) return (List<DatabaseContainer>)Enumerable.Empty<DatabaseContainer>(); 
-        //{
-        //    foreach (var (key, value) in listDictionary.Dictionary)
-        //    {
-        //        Console.WriteLine(key);
-        //        foreach (var procName in value)
-        //        {
-        //            Console.WriteLine($"   {procName}");
-        //        }
-        //    }
-        //}
-
-
 
         return databaseContainers.Where(x => x.List.Count > 0).ToList();
     }

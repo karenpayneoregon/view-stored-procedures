@@ -22,6 +22,7 @@ public partial class Form1 : Form
     private ListDictionary _listDictionary;
     private BindingList<ProcItem> _bindingList = new();
     private StoredProcedureHelpers _helpers = new();
+    
     private async void Form1_Load(object sender, EventArgs e)
     {
 
@@ -62,11 +63,10 @@ public partial class Form1 : Form
     private void PresentProcedure()
     {
         var current = _bindingList[DatabaseComboBox.SelectedIndex];
+        
         ProceduresComboBox.DataSource = current.List;
 
         var dbName = DatabaseComboBox.Text;
-        var procName = ProceduresComboBox.Text;
-
         var selectedProc = current.List[ProceduresComboBox.SelectedIndex];
         
         ProcedureTextBox.Text = _helpers.GetStoredProcedureDefinition(dbName, selectedProc);

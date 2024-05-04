@@ -3,7 +3,9 @@
 public class ListDictionary
 {
     private Dictionary<string, List<string>> _internalDictionary = new();
-    public Dictionary<string, List<string>> Dictionary => _internalDictionary;
+    public Dictionary<string, List<string>> Dictionary 
+        => _internalDictionary;
+    
     public bool HasItems => _internalDictionary.Count > 0;
 
     public void Add(string key, string value)

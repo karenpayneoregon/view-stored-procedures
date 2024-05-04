@@ -13,5 +13,4 @@ public class ProcedureContainer
     public string Procedure { get; set; }
     public string Definition { get; set; }
     public override string ToString() => Procedure;
-
 }
